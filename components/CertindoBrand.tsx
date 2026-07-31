@@ -16,7 +16,7 @@ export default function CertindoBrand({
       />
       {!compact && (
         <span className="brand-copy">
-          <strong>CERTINDO</strong>
+          <strong>CERTINDONESIA</strong>
           <small>Calibration Services</small>
         </span>
       )}

@@ -66,13 +66,13 @@ if (deadlineRow) documentXml = documentXml.replace(deadlineRow, "");
 const signatureDrawing =
   '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing>' +
   '<wp:inline distT="0" distB="0" distL="0" distR="0">' +
-  '<wp:extent cx="720000" cy="720000"/><wp:effectExtent l="0" t="0" r="0" b="0"/>' +
+  '<wp:extent cx="950000" cy="650000"/><wp:effectExtent l="0" t="0" r="0" b="0"/>' +
   '<wp:docPr id="9001" name="Tanda tangan dan cap Manajer Teknis" descr="Tanda tangan dan cap Manajer Teknis"/>' +
   '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
   '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
   '<pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="ttd-manager-certindo.png" descr="Tanda tangan dan cap Manajer Teknis"/><pic:cNvPicPr/></pic:nvPicPr>' +
-  '<pic:blipFill><a:blip r:embed="rId16"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
-  '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="720000" cy="720000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
+  '<pic:blipFill><a:blip r:embed="rId16"/><a:srcRect l="12000" t="21000" r="3000" b="19000"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+  '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="950000" cy="650000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
   '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
 
 // Always relocate the signature to the manager textbox. The staff textbox must
@@ -83,6 +83,14 @@ const signatureParagraphPattern =
   /<w:p\b[^>]*>(?:(?!<\/w:p>)[\s\S])*?r:embed="rId16"(?:(?!<\/w:p>)[\s\S])*?<\/w:p>/;
 const existingSignatureParagraph =
   signatureTextBox?.match(signatureParagraphPattern)?.[0] ?? signatureDrawing;
+const normalizedSignatureParagraph = existingSignatureParagraph
+  .replace(/<wp:extent cx="\d+" cy="\d+"\/>/, '<wp:extent cx="950000" cy="650000"/>')
+  .replace(/<a:ext cx="\d+" cy="\d+"\/>/, '<a:ext cx="950000" cy="650000"/>')
+  .replace(/<a:srcRect\b[^>]*\/>/, "")
+  .replace(
+    '<a:blip r:embed="rId16"/>',
+    '<a:blip r:embed="rId16"/><a:srcRect l="12000" t="21000" r="3000" b="19000"/>'
+  );
 if (signatureTextBox) {
   documentXml = documentXml.replace(
     signatureTextBox,
@@ -115,10 +123,10 @@ const managerTitleEnd = updatedManagerTextBox.indexOf(
   updatedManagerTextBox.indexOf("Manajer Teknis")
 );
 if (managerTitleEnd < 0) throw new Error("Judul Manajer Teknis tidak ditemukan.");
-updatedManagerTextBox =
-  updatedManagerTextBox.slice(0, managerTitleEnd + 6) +
-  existingSignatureParagraph +
-  updatedManagerTextBox.slice(managerTitleEnd + 6);
+  updatedManagerTextBox =
+    updatedManagerTextBox.slice(0, managerTitleEnd + 6) +
+    normalizedSignatureParagraph +
+    updatedManagerTextBox.slice(managerTitleEnd + 6);
 documentXml = documentXml.replace(managerTextBox, updatedManagerTextBox);
 
 // Simplify the calibration-equipment table to: No., Equipment Name,
