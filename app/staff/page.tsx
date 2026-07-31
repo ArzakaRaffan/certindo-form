@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import SignOutButton from "@/components/SignOutButton";
 import type { Submission, AlatKalibrasi } from "@prisma/client";
+import CertindoBrand from "@/components/CertindoBrand";
 
 type SubmissionRow = Submission & { alatList: AlatKalibrasi[] };
 
@@ -21,6 +22,7 @@ export default async function StaffDashboard() {
     <div className="page-wide">
       <div className="top-nav">
         <div>
+          <div className="staff-brand staff-brand-left"><CertindoBrand /></div>
           <h1>Dashboard Permohonan Kalibrasi</h1>
           <p className="subtitle" style={{ marginBottom: 0 }}>
             Masuk sebagai {session.user?.name}

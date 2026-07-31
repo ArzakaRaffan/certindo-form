@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import CertindoBrand from "@/components/CertindoBrand";
 
 export default function StaffLoginPage() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function StaffLoginPage() {
   return (
     <div className="page" style={{ maxWidth: 400, paddingTop: 80 }}>
       <div className="card">
+        <div className="staff-brand"><CertindoBrand /></div>
         <h1>Login Staf Teknis</h1>
         <p className="subtitle">Masuk untuk mengelola permohonan kalibrasi</p>
         <form onSubmit={handleSubmit}>

@@ -16,6 +16,9 @@ enum SubmissionStatus {
 enum JenisLayanan {
   LAB
   INSITU
+  IN_OUR_LAB
+  ON_SITE
+  HYBRID
 }
 
 enum KecepatanLayanan {

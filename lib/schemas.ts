@@ -15,9 +15,8 @@ export const submissionSchema = z.object({
   hp: z.string().min(1, "No. HP wajib diisi"),
   email: z.string().email("Format email tidak valid"),
   tanggalPermohonan: z.string().min(1, "Tanggal permohonan wajib diisi"),
-  jenisLayanan: z.enum(["LAB", "INSITU"]),
+  jenisLayanan: z.enum(["IN_OUR_LAB", "ON_SITE", "HYBRID"]),
   kecepatanLayanan: z.enum(["REGULER", "PERCEPATAN"]),
-  penambahanTenggat: z.boolean(),
   alatList: z.array(alatSchema).min(1, "Minimal 1 alat harus diisi"),
 });
 
@@ -32,8 +31,6 @@ export const approvalSchema = z.object({
   evalTanggal: z.string().min(1, "Tanggal evaluasi wajib diisi"),
   catatanKondisiAlat: z.string().optional(),
   kesimpulan: z.enum(["DIPROSES", "DITANGGUHKAN"]),
-  diverifikasiOleh: z.string().optional(),
-  namaStafTeknis: z.string().min(1, "Nama staf teknis wajib diisi"),
 });
 
 export type ApprovalInput = z.infer<typeof approvalSchema>;

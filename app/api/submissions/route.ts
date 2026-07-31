@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
       tanggalPermohonan: new Date(data.tanggalPermohonan),
       jenisLayanan: data.jenisLayanan,
       kecepatanLayanan: data.kecepatanLayanan,
-      penambahanTenggat: data.penambahanTenggat,
+      // Kolom lama dipertahankan untuk kompatibilitas data historis.
+      penambahanTenggat: false,
       alatList: {
         create: data.alatList.map((a, i) => ({
           no: i + 1,

@@ -15,6 +15,14 @@ export default async function StaffDetailPage({ params }: { params: { id: string
   });
   if (!submission) return notFound();
 
+  const serviceLabels: Record<string, string> = {
+    LAB: "In Our Lab (data lama)",
+    INSITU: "On Site (data lama)",
+    IN_OUR_LAB: "In Our Lab",
+    ON_SITE: "On Site",
+    HYBRID: "Hybrid — In Our Lab & On Site",
+  };
+
   return (
     <div className="page">
       <p>
@@ -33,9 +41,8 @@ export default async function StaffDetailPage({ params }: { params: { id: string
         <p><strong>Alamat Pemilik Alat:</strong> {submission.alamatPemilikAlat}</p>
         <p><strong>Narahubung:</strong> {submission.narahubung} — {submission.hp} — {submission.email}</p>
         <p><strong>Tanggal Permohonan:</strong> {new Date(submission.tanggalPermohonan).toLocaleDateString("id-ID")}</p>
-        <p><strong>Jenis Layanan:</strong> {submission.jenisLayanan === "LAB" ? "Lab PT Certindonesia" : "Insitu"}</p>
+        <p><strong>Jenis Layanan:</strong> {serviceLabels[submission.jenisLayanan] ?? submission.jenisLayanan}</p>
         <p><strong>Kecepatan Layanan:</strong> {submission.kecepatanLayanan === "REGULER" ? "Reguler" : "Percepatan"}</p>
-        <p><strong>Penambahan Tenggat:</strong> {submission.penambahanTenggat ? "Ya" : "Tidak"}</p>
       </div>
 
       <div className="card">
@@ -75,7 +82,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
       ) : (
         <div className="card">
           <h2>Evaluasi Permintaan & Persetujuan</h2>
-          <ApprovalForm submissionId={submission.id} staffName={session.user?.name ?? ""} />
+          <ApprovalForm submissionId={submission.id} />
         </div>
       )}
     </div>

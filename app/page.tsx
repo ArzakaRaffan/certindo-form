@@ -2,9 +2,11 @@
 
 import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import CertindoBrand from "@/components/CertindoBrand";
 
 type AlatRow = { namaAlat: string; rangeKalibrasi: string; jumlah: string };
 type Step = 1 | 2 | 3;
+type JenisLayanan = "IN_OUR_LAB" | "ON_SITE" | "HYBRID";
 
 const emptyAlat = (): AlatRow => ({ namaAlat: "", rangeKalibrasi: "", jumlah: "1" });
 
@@ -41,9 +43,8 @@ export default function FormPage() {
     hp: "",
     email: "",
     tanggalPermohonan: new Date().toISOString().slice(0, 10),
-    jenisLayanan: "LAB" as "LAB" | "INSITU",
+    jenisLayanan: "IN_OUR_LAB" as JenisLayanan,
     kecepatanLayanan: "REGULER" as "REGULER" | "PERCEPATAN",
-    penambahanTenggat: false,
   });
   const [alatList, setAlatList] = useState<AlatRow[]>([emptyAlat()]);
 
@@ -100,17 +101,19 @@ export default function FormPage() {
     }
   }
 
-  const serviceLabel = form.jenisLayanan === "LAB" ? "Kalibrasi di Laboratorium PT Certindonesia" : "Kalibrasi di lokasi (Insitu)";
+  const serviceLabels: Record<JenisLayanan, string> = {
+    IN_OUR_LAB: "In Our Lab",
+    ON_SITE: "On Site",
+    HYBRID: "Hybrid — In Our Lab & On Site",
+  };
+  const serviceLabel = serviceLabels[form.jenisLayanan];
   const priorityLabel = form.kecepatanLayanan === "REGULER" ? "Reguler" : "Percepatan";
 
   return (
     <>
       <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="#top" aria-label="CERTINDO Calibration">
-            <span className="brand-mark"><span>C</span></span>
-            <span className="brand-copy"><strong>CERTINDO</strong><small>Calibration Services</small></span>
-          </a>
+          <a href="#top" aria-label="CERTINDO Calibration"><CertindoBrand /></a>
           <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Buka menu" aria-expanded={menuOpen}>
             <span></span><span></span><span></span>
           </button>
@@ -118,7 +121,7 @@ export default function FormPage() {
             <a className="active" href="#application">Formulir</a>
             <a href="#guide">Panduan</a>
             <a href="#faq">Bantuan</a>
-            <a className="nav-button" href="https://certindonesia.id">Website CERTINDO</a>
+            <a className="nav-button" href="https://certindo.id">Website CERTINDO</a>
           </nav>
         </div>
       </header>
@@ -132,7 +135,7 @@ export default function FormPage() {
               <p className="hero-lead">Ajukan permohonan kalibrasi dengan melengkapi informasi pemohon dan detail peralatan. Tim kami akan meninjau permohonan Anda untuk konfirmasi lebih lanjut.</p>
               <div className="hero-actions">
                 <button className="btn" onClick={scrollToForm}>Mulai Permohonan <Icon name="arrow" /></button>
-                <a className="btn btn-secondary" href="https://wa.me/6281280080417">Tanya via WhatsApp</a>
+                <a className="btn btn-secondary" href="https://wa.me/6282211772209">Tanya via WhatsApp</a>
               </div>
               <p className="required-note"><span>*</span> Kolom bertanda bintang wajib diisi.</p>
             </div>
@@ -225,10 +228,9 @@ export default function FormPage() {
                     <Field label="Alamat Email" required><input type="email" required placeholder="nama@perusahaan.com" value={form.email} onChange={(e) => updateField("email", e.target.value)} /></Field>
                   </div>
                   <div className="subsection-title"><h4>Informasi Layanan</h4><span></span></div>
-                  <div className="form-grid form-grid-three">
-                    <ChoiceGroup label="Lokasi Kalibrasi" name="lokasi" value={form.jenisLayanan} onChange={(value) => updateField("jenisLayanan", value as "LAB" | "INSITU")} options={[["LAB", "Laboratorium CERTINDO"], ["INSITU", "Di lokasi (Insitu)"]]} />
+                  <div className="form-grid service-grid">
+                    <ChoiceGroup label="Lokasi Kalibrasi" name="lokasi" value={form.jenisLayanan} onChange={(value) => updateField("jenisLayanan", value as JenisLayanan)} options={[["IN_OUR_LAB", "In Our Lab"], ["ON_SITE", "On Site"], ["HYBRID", "Hybrid — In Our Lab & On Site"]]} />
                     <ChoiceGroup label="Prioritas Layanan" name="prioritas" value={form.kecepatanLayanan} onChange={(value) => updateField("kecepatanLayanan", value as "REGULER" | "PERCEPATAN")} options={[["REGULER", "Reguler"], ["PERCEPATAN", "Percepatan"]]} />
-                    <ChoiceGroup label="Tenggat Berikutnya di Sertifikat?" name="tenggat" value={String(form.penambahanTenggat)} onChange={(value) => updateField("penambahanTenggat", value === "true")} options={[["true", "Ya"], ["false", "Tidak"]]} />
                   </div>
                   <div className="info-box"><Icon name="info" /><p><strong>Informasi untuk pemohon</strong><span>Evaluasi teknis, kondisi peralatan, dan persetujuan akhir akan dilengkapi oleh staf CERTINDO setelah permohonan diterima.</span></p></div>
                 </div>
@@ -271,7 +273,6 @@ export default function FormPage() {
                       <div className="review-heading"><h4>Informasi Layanan</h4><button type="button" onClick={() => setStep(1)}>Ubah</button></div>
                       <Review label="Lokasi" value={serviceLabel} />
                       <Review label="Prioritas" value={priorityLabel} />
-                      <Review label="Tenggat berikutnya" value={form.penambahanTenggat ? "Dicantumkan pada sertifikat" : "Tidak dicantumkan"} />
                     </section>
                   </div>
                   <section className="review-equipment">
@@ -305,11 +306,11 @@ export default function FormPage() {
         </section>
 
         <section className="support-cta">
-          <div className="container support-inner"><div><span className="eyebrow">Butuh Bantuan?</span><h2>Kami siap membantu permohonan Anda.</h2><p>Hubungi tim kami untuk ketersediaan layanan dan bantuan proses pengajuan.</p></div><div className="support-actions"><a className="btn" href="https://wa.me/6281280080417">Chat via WhatsApp</a><a className="btn btn-light" href="https://certindonesia.id">Website CERTINDO</a></div></div>
+          <div className="container support-inner"><div><span className="eyebrow">Butuh Bantuan?</span><h2>Kami siap membantu permohonan Anda.</h2><p>Hubungi tim kami untuk ketersediaan layanan dan bantuan proses pengajuan.</p></div><div className="support-actions"><a className="btn" href="https://wa.me/6282211772209">Chat via WhatsApp</a><a className="btn btn-light" href="https://certindo.id">Website CERTINDO</a></div></div>
         </section>
       </main>
 
-      <footer className="site-footer"><div className="container footer-inner"><div className="brand brand-inverse"><span className="brand-mark"><span>C</span></span><span className="brand-copy"><strong>CERTINDO</strong><small>Calibration Services</small></span></div><p>Layanan kalibrasi yang presisi, andal, dan profesional untuk kebutuhan industri Anda.</p><div><a href="#application">Formulir</a><a href="#faq">Bantuan</a><a href="/staff/login">Portal Staf</a></div><small>© {new Date().getFullYear()} PT Certindonesia. Hak cipta dilindungi.</small></div></footer>
+      <footer className="site-footer"><div className="container footer-inner"><CertindoBrand inverse /><p>Layanan kalibrasi yang presisi, andal, dan profesional untuk kebutuhan industri Anda.</p><div><a href="#application">Formulir</a><a href="#faq">Bantuan</a><a href="/staff/login">Portal Staf</a></div><small>© {new Date().getFullYear()} PT Certindonesia. Hak cipta dilindungi.</small></div></footer>
     </>
   );
 }
@@ -319,7 +320,7 @@ function Field({ label, required, wide, children }: { label: string; required?: 
 }
 
 function ChoiceGroup({ label, name, value, onChange, options }: { label: string; name: string; value: string; onChange: (value: string) => void; options: string[][] }) {
-  return <fieldset className="choice-field"><legend>{label}<span className="required"> *</span></legend><div className="choice-group">{options.map(([optionValue, optionLabel]) => <label key={optionValue} className={value === optionValue ? "selected" : ""}><input type="radio" name={name} value={optionValue} checked={value === optionValue} onChange={() => onChange(optionValue)} /><span>{optionLabel}</span></label>)}</div></fieldset>;
+  return <fieldset className={`choice-field${options.length > 2 ? " choice-field-wide" : ""}`}><legend>{label}<span className="required"> *</span></legend><div className="choice-group">{options.map(([optionValue, optionLabel]) => <label key={optionValue} className={value === optionValue ? "selected" : ""}><input type="radio" name={name} value={optionValue} checked={value === optionValue} onChange={() => onChange(optionValue)} /><span>{optionLabel}</span></label>)}</div></fieldset>;
 }
 
 function Review({ label, value }: { label: string; value: string }) {

@@ -40,24 +40,19 @@ export function generateDocx(submission: SubmissionWithAlat): Buffer {
     email: submission.email,
     tanggal_permohonan: formatTanggal(submission.tanggalPermohonan),
 
-    cek_lab: submission.jenisLayanan === "LAB",
-    cek_insitu: submission.jenisLayanan === "INSITU",
+    cek_in_our_lab: submission.jenisLayanan === "IN_OUR_LAB" || submission.jenisLayanan === "LAB",
+    cek_on_site: submission.jenisLayanan === "ON_SITE" || submission.jenisLayanan === "INSITU",
+    cek_hybrid: submission.jenisLayanan === "HYBRID",
     cek_reguler: submission.kecepatanLayanan === "REGULER",
     cek_percepatan: submission.kecepatanLayanan === "PERCEPATAN",
-    cek_tenggat_ya: submission.penambahanTenggat === true,
-    cek_tenggat_tidak: submission.penambahanTenggat === false,
 
     alat: submission.alatList
       .sort((a: AlatKalibrasi, b: AlatKalibrasi) => a.no - b.no)
       .map((a: AlatKalibrasi) => ({
         no: String(a.no),
         nama_alat: a.namaAlat,
-        merek: a.merek || "-",
-        tipe: a.tipe || "-",
-        no_seri: a.noSeri || "-",
         range_kalibrasi: a.rangeKalibrasi,
         jumlah: String(a.jumlah),
-        cek_kesesuaian: "",
       })),
 
     eval_kesesuaian_lingkup: submission.evalKesesuaianLingkup === true,
@@ -70,9 +65,6 @@ export function generateDocx(submission: SubmissionWithAlat): Buffer {
     catatan_kondisi_alat: submission.catatanKondisiAlat || "",
     kesimpulan_diproses: submission.kesimpulan === "DIPROSES",
     kesimpulan_ditangguhkan: submission.kesimpulan === "DITANGGUHKAN",
-
-    nama_staf_teknis: submission.namaStafTeknis || "",
-    nama_manajer_teknis: submission.diverifikasiOleh || "",
 
     // "Tanggal berlaku" di footer = tanggal saat staf menyetujui permohonan (evalTanggal)
     tanggal_berlaku: formatTanggal(submission.evalTanggal ?? null),

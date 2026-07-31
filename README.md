@@ -16,7 +16,7 @@ di server maupun cloud storage manapun.
 
 1. Client isi form di `/` (data perusahaan + daftar alat) → nomor surat auto-generate (unik, aman dari race condition karena di-increment dalam DB transaction) → status `MENUNGGU_APPROVAL`.
 2. Staf login di `/staff/login`, buka dashboard `/staff`, klik submission → isi bagian evaluasi & kesimpulan → klik **Setujui & Selesaikan** → status jadi `SELESAI`.
-3. Client (di halaman `/berhasil/[id]`, simpan link-nya) atau staf (di `/staff/[id]`) bisa klik **Download Dokumen** → API route generate `.docx` dari template + data DB, langsung di-stream ke browser sebagai file download. Tidak pernah ditulis ke disk.
+3. Staf yang sudah login dapat klik **Download Dokumen** dari `/staff/[id]` → API route generate `.docx` dari template + data DB dan langsung men-stream file ke browser. Pelanggan tidak memperoleh akses download.
 
 ## Setup
 
@@ -60,7 +60,7 @@ npm run dev
 ```
 app/
   page.tsx                          -> form client (page 1 + page 2)
-  berhasil/[id]/page.tsx            -> halaman konfirmasi + download (kalau sudah approved)
+  berhasil/[id]/page.tsx            -> halaman konfirmasi dan status pelanggan
   staff/login/page.tsx              -> login staf
   staff/page.tsx                    -> dashboard list semua submission
   staff/[id]/page.tsx               -> detail submission + form approval
@@ -96,7 +96,7 @@ prisma/
 | `{nama_perusahaan}`, `{alamat}`, `{nama_pemilik_alat}`, `{alamat_pemilik_alat}` | Form client |
 | `{narahubung}`, `{hp}`, `{email}` | Form client |
 | `{tanggal_permohonan}` | Form client |
-| `{#cek_lab}`/`{#cek_insitu}`, `{#cek_reguler}`/`{#cek_percepatan}`, `{#cek_tenggat_ya}`/`{#cek_tenggat_tidak}` | Conditional checkbox (√ kalau true, □ kalau false) |
+| `{#cek_in_our_lab}`/`{#cek_on_site}`/`{#cek_hybrid}`, `{#cek_reguler}`/`{#cek_percepatan}` | Conditional checkbox (√ kalau true, □ kalau false) |
 | `{#alat}...{/alat}` (loop) berisi `{no}`, `{nama_alat}`, `{merek}`, `{tipe}`, `{no_seri}`, `{range_kalibrasi}`, `{jumlah}` | Daftar alat, jumlah baris dinamis |
 | `{eval_metode}`, `{eval_tanggal}`, `{catatan_kondisi_alat}` | Form approval staf |
 | `{#kesimpulan_diproses}`/`{#kesimpulan_ditangguhkan}` | Form approval staf |

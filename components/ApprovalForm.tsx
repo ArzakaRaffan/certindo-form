@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation";
 
 export default function ApprovalForm({
   submissionId,
-  staffName,
 }: {
   submissionId: string;
-  staffName: string;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -23,8 +21,6 @@ export default function ApprovalForm({
     evalTanggal: new Date().toISOString().slice(0, 10),
     catatanKondisiAlat: "",
     kesimpulan: "DIPROSES" as "DIPROSES" | "DITANGGUHKAN",
-    diverifikasiOleh: "",
-    namaStafTeknis: staffName,
   });
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -142,24 +138,6 @@ export default function ApprovalForm({
           </label>
         </div>
       </div>
-      <div className="field">
-        <label>Nama Staf Teknis</label>
-        <input
-          type="text"
-          required
-          value={form.namaStafTeknis}
-          onChange={(e) => update("namaStafTeknis", e.target.value)}
-        />
-      </div>
-      <div className="field">
-        <label>Diverifikasi Oleh (Manajer Teknis)</label>
-        <input
-          type="text"
-          value={form.diverifikasiOleh}
-          onChange={(e) => update("diverifikasiOleh", e.target.value)}
-        />
-      </div>
-
       {error && <p className="error">{error}</p>}
 
       <button type="submit" className="btn" disabled={submitting}>

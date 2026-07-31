@@ -36,8 +36,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       evalTanggal: new Date(data.evalTanggal),
       catatanKondisiAlat: data.catatanKondisiAlat,
       kesimpulan: data.kesimpulan,
-      diverifikasiOleh: data.diverifikasiOleh,
-      namaStafTeknis: data.namaStafTeknis,
       status: "SELESAI",
     },
   });
