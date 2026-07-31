@@ -73,6 +73,9 @@ export function generateDocx(submission: SubmissionWithAlat): Buffer {
 
     nama_staf_teknis: submission.namaStafTeknis || "",
     nama_manajer_teknis: submission.diverifikasiOleh || "",
+
+    // "Tanggal berlaku" di footer = tanggal saat staf menyetujui permohonan (evalTanggal)
+    tanggal_berlaku: formatTanggal(submission.evalTanggal ?? null),
   });
 
   return doc.getZip().generate({ type: "nodebuffer" });
