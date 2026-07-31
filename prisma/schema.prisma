@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum SubmissionStatus {
+  MENUNGGU_APPROVAL
+  SELESAI
+}
+
+enum JenisLayanan {
+  LAB
+  INSITU
+}
+
+enum KecepatanLayanan {
+  REGULER
+  PERCEPATAN
+}
+
+enum Kesimpulan {
+  DIPROSES
+  DITANGGUHKAN
+}
+
+// Satu baris counter global. Nomor surat format: CC/LAB/{seq}/{MM}/{YYYY}
+// seq di-increment di dalam transaction supaya aman walau ada submit bersamaan.
+model NomorSuratCounter {
+  id         Int @id @default(1)
+  lastNumber Int @default(0)
+}
+
+model StaffUser {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Submission {
+  id       String @id @default(cuid())
+  nomorSurat String @unique
+
+  // ==== Diisi client (Page 1) ====
+  namaPerusahaan      String
+  alamat              String
+  namaPemilikAlat     String
+  alamatPemilikAlat   String
+  narahubung          String
+  hp                  String
+  email               String
+  tanggalPermohonan   DateTime
+  jenisLayanan        JenisLayanan
+  kecepatanLayanan    KecepatanLayanan
+  penambahanTenggat   Boolean
+
+  // ==== Diisi client (Page 2) ====
+  alatList AlatKalibrasi[]
+
+  // ==== Diisi staf teknis (Evaluasi Permintaan & Status Alat) ====
+  evalKesesuaianLingkup     Boolean?
+  evalKesesuaianKelengkapan Boolean?
+  evalTeknisiKalibrasi      Boolean?
+  evalKondisiPeralatan      Boolean?
+  evalMetode                String?
+  evalCatatanTambahan       String?
+  evalTanggal               DateTime?
+  catatanKondisiAlat        String?
+  kesimpulan                Kesimpulan?
+  diverifikasiOleh          String?
+  // Nama staf teknis yang approve, auto dari session (bukan input manual)
+  namaStafTeknis            String?
+
+  status SubmissionStatus @default(MENUNGGU_APPROVAL)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model AlatKalibrasi {
+  id             String @id @default(cuid())
+  submissionId   String
+  submission     Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  no             Int
+  namaAlat       String
+  merek          String?
+  tipe           String?
+  noSeri         String?
+  rangeKalibrasi String
+  jumlah         Int
+
+  @@index([submissionId])
+}
