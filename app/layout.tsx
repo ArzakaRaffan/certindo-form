@@ -5,6 +5,11 @@ import Providers from "@/components/Providers";
 export const metadata: Metadata = {
   title: "Permohonan Kalibrasi | CERTINDO",
   description: "Portal pengajuan layanan kalibrasi PT Certindonesia.",
+  icons: {
+    icon: "/assets/logo-certindo.png",
+    shortcut: "/assets/logo-certindo.png",
+    apple: "/assets/logo-certindo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
