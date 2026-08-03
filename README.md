@@ -1,112 +1,139 @@
 # Aplikasi Permohonan Kalibrasi
 
-Web app buat client PT Certindonesia isi form permohonan kalibrasi online, staf teknis approve,
-lalu dokumen `.docx` resmi (format & layout persis sama kayak template asli, termasuk logo)
-di-generate on-the-fly setiap kali ada yang download — tidak ada file yang disimpan permanen
-di server maupun cloud storage manapun.
+Aplikasi web untuk pengajuan layanan kalibrasi PT Certindonesia. Pelanggan dapat mengisi formulir permohonan secara daring, sedangkan staf teknis dapat meninjau dan menyetujui permohonan melalui dashboard internal.
 
-## Stack
+Dokumen resmi berformat `.docx` dibuat sesuai template saat diunduh. Dokumen hasil generasi tidak disimpan secara permanen di server maupun cloud storage.
 
-- **Next.js 14** (App Router) — satu app, form client + dashboard staf jadi satu
-- **Neon (Postgres) + Prisma** — cuma nyimpen data teks (submission, daftar alat, counter nomor surat)
-- **NextAuth (Credentials)** — login staf teknis
-- **docxtemplater + pizzip** — isi ulang template `.docx` asli, generate on-demand pas didownload
+## Fitur utama
 
-## Alur
+- Formulir permohonan kalibrasi bertahap.
+- Daftar peralatan dengan jumlah baris dinamis.
+- Nomor surat unik yang dibuat secara transaction-safe.
+- Dashboard dan autentikasi staf teknis.
+- Alur evaluasi, persetujuan, dan penyelesaian permohonan.
+- Pembuatan dokumen `.docx` secara on-demand.
 
-1. Client isi form di `/` (data perusahaan + daftar alat) → nomor surat auto-generate (unik, aman dari race condition karena di-increment dalam DB transaction) → status `MENUNGGU_APPROVAL`.
-2. Staf login di `/staff/login`, buka dashboard `/staff`, klik submission → isi bagian evaluasi & kesimpulan → klik **Setujui & Selesaikan** → status jadi `SELESAI`.
-3. Staf yang sudah login dapat klik **Download Dokumen** dari `/staff/[id]` → API route generate `.docx` dari template + data DB dan langsung men-stream file ke browser. Pelanggan tidak memperoleh akses download.
+## Teknologi
 
-## Setup
+- [Next.js 14](https://nextjs.org/) dengan App Router.
+- [Neon Postgres](https://neon.tech/) dan [Prisma](https://www.prisma.io/).
+- [NextAuth.js](https://next-auth.js.org/) dengan Credentials Provider.
+- [docxtemplater](https://docxtemplater.com/) dan [PizZip](https://github.com/open-xml-templating/pizzip).
+- [Zod](https://zod.dev/) untuk validasi data.
 
-### 1. Install dependencies
+## Alur aplikasi
+
+1. Pelanggan mengisi data pemohon, informasi layanan, dan daftar peralatan melalui halaman utama.
+2. Sistem membuat nomor surat unik dan menyimpan permohonan dengan status `MENUNGGU_APPROVAL`.
+3. Staf masuk melalui `/staff/login`, membuka detail permohonan, lalu mengisi evaluasi dan kesimpulan.
+4. Setelah disetujui, status permohonan berubah menjadi `SELESAI`.
+5. Staf dapat mengunduh dokumen resmi dari halaman detail. Pelanggan tidak memiliki akses ke dokumen tersebut.
+
+## Menjalankan proyek secara lokal
+
+### Prasyarat
+
+- Node.js 18.17 atau versi lebih baru.
+- Database PostgreSQL. Konfigurasi bawaan ditujukan untuk Neon.
+
+### 1. Instal dependensi
 
 ```bash
 npm install
 ```
 
-### 2. Siapin database Neon
+### 2. Konfigurasi environment
 
-1. Bikin project baru di [neon.tech](https://neon.tech) (gratis).
-2. Dari dashboard, buka **Connection Details**, pilih **Prisma**. Copy 2 connection string yang muncul (pooled & direct).
-3. Copy `.env.example` jadi `.env`, isi `DATABASE_URL` (pooled) dan `DIRECT_URL` (direct/unpooled).
-4. Isi juga `NEXTAUTH_SECRET` (generate random string, misal `openssl rand -base64 32`).
+Salin `.env.example` menjadi `.env`, kemudian isi variabel berikut:
 
-### 3. Migrate & seed
+```env
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+NEXTAUTH_SECRET="..."
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+Gunakan connection string pooled untuk `DATABASE_URL` dan koneksi direct/unpooled untuk `DIRECT_URL`. Buat `NEXTAUTH_SECRET` yang kuat, misalnya dengan:
 
 ```bash
-npx prisma migrate dev --name init
+openssl rand -base64 32
+```
+
+### 3. Siapkan database
+
+```bash
+npx prisma migrate dev
 npm run seed
 ```
 
-`seed` bakal bikin 1 row counter nomor surat (mulai dari 0) dan 1 akun staf teknis contoh:
+Seed membuat counter nomor surat dan satu akun staf awal:
+
 - Email: `staf@certindonesia.com`
 - Password: `gantipassword123`
 
-**Segera ganti password ini** (lewat Prisma Studio: `npx prisma studio`, atau bikin halaman ganti password kalau mau lanjut develop).
+> Ganti kredensial bawaan segera sebelum aplikasi digunakan di lingkungan produksi.
 
-### 4. Jalankan
+### 4. Jalankan development server
 
 ```bash
 npm run dev
 ```
 
-- Form client: http://localhost:3000
-- Login staf: http://localhost:3000/staff/login
+Aplikasi dapat diakses melalui:
 
-## Struktur folder penting
+- Formulir pelanggan: `http://localhost:3000`
+- Login staf: `http://localhost:3000/staff/login`
 
-```
+## Struktur proyek
+
+```text
 app/
-  page.tsx                          -> form client (page 1 + page 2)
-  berhasil/[id]/page.tsx            -> halaman konfirmasi dan status pelanggan
-  staff/login/page.tsx              -> login staf
-  staff/page.tsx                    -> dashboard list semua submission
-  staff/[id]/page.tsx               -> detail submission + form approval
+  page.tsx                                # Formulir pelanggan
+  berhasil/[id]/page.tsx                 # Halaman konfirmasi
+  staff/login/page.tsx                   # Login staf
+  staff/page.tsx                         # Dashboard permohonan
+  staff/[id]/page.tsx                    # Detail dan persetujuan
   api/
-    submissions/route.ts                    -> POST: client submit form baru
-    submissions/[id]/approve/route.ts       -> POST: staf approve
-    submissions/[id]/download/route.ts      -> GET: generate & stream docx on-demand
-    auth/[...nextauth]/route.ts             -> NextAuth handler
+    submissions/route.ts                 # Membuat permohonan
+    submissions/[id]/approve/route.ts    # Menyetujui permohonan
+    submissions/[id]/download/route.ts   # Membuat dan mengunduh DOCX
+    auth/[...nextauth]/route.ts           # NextAuth handler
 
 lib/
-  prisma.ts            -> Prisma client singleton
-  auth.ts              -> konfigurasi NextAuth (Credentials provider)
-  nomor-surat.ts        -> generator nomor surat unik (transaction-safe)
-  docx-generator.ts     -> isi template docx dari data submission
-  schemas.ts            -> validasi input pakai Zod
-
-templates/
-  template.docx          -> template asli CCI-KAL-FOM-001 yang sudah ditaruh placeholder
-                             docxtemplater ({nama_perusahaan}, {#alat}...{/alat}, dst).
-                             JANGAN diedit manual formatnya di Word tanpa hati-hati -
-                             placeholder-nya sensitif terhadap struktur run/paragraph.
+  prisma.ts                               # Prisma client singleton
+  auth.ts                                 # Konfigurasi NextAuth
+  nomor-surat.ts                          # Generator nomor surat
+  docx-generator.ts                       # Generator dokumen DOCX
+  schemas.ts                              # Validasi input
 
 prisma/
-  schema.prisma          -> model Submission, AlatKalibrasi, StaffUser, NomorSuratCounter
-  seed.ts                -> bikin counter awal + 1 akun staf contoh
+  schema.prisma                           # Skema database
+  seed.ts                                 # Data awal
+
+templates/
+  template.docx                           # Template dokumen resmi
 ```
 
-## Placeholder yang dipakai di template.docx
+## Placeholder dokumen
 
 | Placeholder | Sumber data |
-|---|---|
-| `{nomor_surat}` | Auto-generate, format `CC/LAB/{seq}/{MM}/{YYYY}` |
-| `{nama_perusahaan}`, `{alamat}`, `{nama_pemilik_alat}`, `{alamat_pemilik_alat}` | Form client |
-| `{narahubung}`, `{hp}`, `{email}` | Form client |
-| `{tanggal_permohonan}` | Form client |
-| `{#cek_in_our_lab}`/`{#cek_on_site}`/`{#cek_hybrid}`, `{#cek_reguler}`/`{#cek_percepatan}` | Conditional checkbox (√ kalau true, □ kalau false) |
-| `{#alat}...{/alat}` (loop) berisi `{no}`, `{nama_alat}`, `{merek}`, `{tipe}`, `{no_seri}`, `{range_kalibrasi}`, `{jumlah}` | Daftar alat, jumlah baris dinamis |
-| `{eval_metode}`, `{eval_tanggal}`, `{catatan_kondisi_alat}` | Form approval staf |
-| `{#kesimpulan_diproses}`/`{#kesimpulan_ditangguhkan}` | Form approval staf |
+| --- | --- |
+| `{nomor_surat}` | Nomor surat yang dibuat otomatis dengan format `CC/LAB/{seq}/{MM}/{YYYY}` |
+| `{nama_perusahaan}`, `{alamat}`, `{nama_pemilik_alat}`, `{alamat_pemilik_alat}` | Data pemohon |
+| `{narahubung}`, `{hp}`, `{email}` | Data kontak |
+| `{tanggal_permohonan}` | Tanggal permohonan |
+| `{#cek_in_our_lab}`, `{#cek_on_site}`, `{#cek_hybrid}` | Pilihan lokasi layanan |
+| `{#cek_reguler}`, `{#cek_percepatan}` | Pilihan prioritas layanan |
+| `{#alat}...{/alat}` | Daftar peralatan |
+| `{eval_metode}`, `{eval_tanggal}`, `{catatan_kondisi_alat}` | Evaluasi staf |
+| `{#kesimpulan_diproses}`, `{#kesimpulan_ditangguhkan}` | Kesimpulan evaluasi |
 
-## Yang masih perlu kamu putuskan / kembangin lagi
+Template menggunakan struktur internal Word yang sensitif terhadap perubahan run dan paragraph. Hindari mengubah placeholder secara manual tanpa menguji kembali hasil dokumen.
 
-- **Kolom Merek/Tipe/No. Seri** di tabel Daftar Alat: sekarang selalu terisi `"-"` karena belum ada input-nya di form client (sesuai instruksi awal kamu). Kalau ternyata perlu diisi staf pas alat diterima, tinggal tambah field di `ApprovalForm` + schema + docx-generator.
-- **Validasi nomor HP/format lain** masih basic (cuma "wajib diisi"), belum ada validasi format Indonesia.
-- **Notifikasi email** ke client waktu status berubah jadi `SELESAI` belum ada — bisa ditambah pakai Resend/Nodemailer di endpoint approve.
-- **Rate limiting** endpoint `/api/submissions` (POST) belum ada, biar gak di-spam.
-- Auth staf sekarang single credentials manual lewat seed — kalau mau banyak staf, bikin halaman admin buat tambah akun.
+## Pengembangan lanjutan
 
-Semua ini aman buat dilanjutin pakai Claude Code — struktur project-nya standar Next.js App Router + Prisma, gak ada bagian yang "nyeleneh" yang bakal bikin Claude Code bingung.
+- Menambahkan input merek, tipe, dan nomor seri peralatan.
+- Memperketat validasi nomor telepon dan format data lainnya.
+- Mengirim notifikasi email saat status permohonan berubah.
+- Menambahkan rate limiting pada endpoint publik.
+- Menyediakan pengelolaan akun staf melalui halaman admin.
