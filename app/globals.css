@@ -107,7 +107,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--red); width: 1
 .subsection-title { display: flex; align-items: center; gap: 14px; margin: 30px 0 18px; }.subsection-title h4 { font-size: 13px; margin: 0; white-space: nowrap; }.subsection-title span { height: 1px; background: var(--border); flex: 1; }
 .choice-field { min-width: 0; margin: 0; border: 0; padding: 0; }.choice-group { display: flex; gap: 8px; }.choice-group label { flex: 1; min-height: 48px; border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 11px; line-height: 1.35; }.choice-group label.selected { border-color: var(--navy); background: #f6fafd; color: var(--navy); }
 .info-box { display: flex; align-items: flex-start; gap: 12px; background: var(--blue-soft); border: 1px solid #d3e5f1; border-radius: 9px; padding: 16px 18px; margin-top: 26px; color: #2d6f9f; }.info-box p { margin: 0; display: flex; flex-direction: column; }.info-box strong { font-size: 12px; color: var(--navy-dark); }.info-box span { font-size: 11px; margin-top: 2px; }
-.form-actions { border-top: 1px solid var(--border); padding: 20px 38px; background: #fbfcfd; display: flex; justify-content: space-between; }
+.form-actions { border-top: 1px solid var(--border); padding: 20px 38px; background: #fbfcfd; display: flex; justify-content: space-between; gap: 12px; }
 .error-summary { margin: 24px 38px 0; padding: 14px 16px; border: 1px solid #f1b8bb; background: #fdecee; color: var(--red); border-radius: 8px; display: flex; flex-direction: column; font-size: 12px; }
 
 .equipment-list { display: grid; gap: 16px; }.equipment-card { border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 0; }.equipment-card legend { padding: 0 8px; font: 600 12px "Plus Jakarta Sans"; color: var(--navy); }
@@ -151,5 +151,5 @@ table { width: 100%; border-collapse: collapse; }th, td { text-align: left; bord
 }
 @media (max-width: 480px) {
   .hero-actions { flex-direction: column; }.hero-actions .btn { width: 100%; }.hero-visual { min-height: 290px; }.instrument { transform: scale(.69) rotate(-2deg); }.verified-card { transform: scale(.9); transform-origin: bottom right; }
-  .form-actions .btn { flex: 1; padding-inline: 12px; }.brand-copy small { display: none; }
+  .form-actions { flex-direction: column; }.form-actions .btn { flex: none; width: 100%; padding-inline: 12px; }.brand-copy small { display: none; }
 }
