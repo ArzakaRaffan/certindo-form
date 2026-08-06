@@ -24,8 +24,8 @@ export default async function StaffDetailPage({ params }: { params: { id: string
   };
 
   return (
-    <div className="page">
-      <p>
+    <main className="page staff-detail-page">
+      <p className="staff-back-link">
         <a href="/staff">&larr; Kembali ke dashboard</a>
       </p>
       <h1>{submission.nomorSurat}</h1>
@@ -33,7 +33,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
         Diajukan {new Date(submission.createdAt).toLocaleString("id-ID")}
       </p>
 
-      <div className="card">
+      <section className="card staff-data-card">
         <h2>Data Perusahaan (diisi client)</h2>
         <p><strong>Nama Perusahaan:</strong> {submission.namaPerusahaan}</p>
         <p><strong>Alamat:</strong> {submission.alamat}</p>
@@ -43,9 +43,9 @@ export default async function StaffDetailPage({ params }: { params: { id: string
         <p><strong>Tanggal Permohonan:</strong> {new Date(submission.tanggalPermohonan).toLocaleDateString("id-ID")}</p>
         <p><strong>Jenis Layanan:</strong> {serviceLabels[submission.jenisLayanan] ?? submission.jenisLayanan}</p>
         <p><strong>Kecepatan Layanan:</strong> {submission.kecepatanLayanan === "REGULER" ? "Reguler" : "Percepatan"}</p>
-      </div>
+      </section>
 
-      <div className="card">
+      <section className="card staff-data-card">
         <h2>Daftar Alat</h2>
         <table>
           <thead>
@@ -69,22 +69,26 @@ export default async function StaffDetailPage({ params }: { params: { id: string
               ))}
           </tbody>
         </table>
-      </div>
+      </section>
 
       {submission.status === "SELESAI" ? (
-        <div className="card">
+        <section className="card staff-data-card">
           <h2>Sudah Disetujui</h2>
           <p>Kesimpulan: <strong>{submission.kesimpulan === "DIPROSES" ? "Diproses" : "Ditangguhkan"}</strong></p>
           <a className="btn" href={`/api/submissions/${submission.id}/download`}>
             Download Dokumen (.docx)
           </a>
-        </div>
+        </section>
       ) : (
-        <div className="card">
-          <h2>Evaluasi Permintaan & Persetujuan</h2>
+        <section className="card approval-card">
+          <div className="approval-card-heading">
+            <span>Langkah staf</span>
+            <h2>Evaluasi Permintaan & Persetujuan</h2>
+            <p>Bagian ini diisi oleh staf teknis setelah memeriksa data permohonan dan alat.</p>
+          </div>
           <ApprovalForm submissionId={submission.id} />
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   );
 }

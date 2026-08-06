@@ -50,99 +50,110 @@ export default function ApprovalForm({
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="field">
-        <label>
+    <form className="approval-form" onSubmit={handleSubmit}>
+      <div className="approval-intro">
+        <span className="approval-intro-icon" aria-hidden="true">✓</span>
+        <div>
+          <strong>Area evaluasi staf</strong>
+          <p>Centang setiap poin yang sudah diperiksa, lalu lengkapi hasil evaluasi di bawah.</p>
+        </div>
+      </div>
+
+      <fieldset className="evaluation-checklist">
+        <legend>Checklist pemeriksaan</legend>
+        <label className="evaluation-option">
           <input
             type="checkbox"
             checked={form.evalKesesuaianLingkup}
             onChange={(e) => update("evalKesesuaianLingkup", e.target.checked)}
-            style={{ width: "auto", marginRight: 6 }}
           />
-          Kesesuaian Lingkup Akreditasi
+          <span><strong>Kesesuaian Lingkup Akreditasi</strong><small>Pastikan layanan tercakup dalam lingkup yang berlaku.</small></span>
         </label>
-      </div>
-      <div className="field">
-        <label>
+        <label className="evaluation-option">
           <input
             type="checkbox"
             checked={form.evalKesesuaianKelengkapan}
             onChange={(e) => update("evalKesesuaianKelengkapan", e.target.checked)}
-            style={{ width: "auto", marginRight: 6 }}
           />
-          Kesesuaian dan Kelengkapan Alat
+          <span><strong>Kesesuaian dan Kelengkapan Alat</strong><small>Verifikasi data, jumlah, dan informasi alat yang diajukan.</small></span>
         </label>
-      </div>
-      <div className="field">
-        <label>
+        <label className="evaluation-option">
           <input
             type="checkbox"
             checked={form.evalTeknisiKalibrasi}
             onChange={(e) => update("evalTeknisiKalibrasi", e.target.checked)}
-            style={{ width: "auto", marginRight: 6 }}
           />
-          Teknisi kalibrasi
+          <span><strong>Ketersediaan Teknisi Kalibrasi</strong><small>Konfirmasi teknisi yang sesuai tersedia untuk pekerjaan ini.</small></span>
         </label>
-      </div>
-      <div className="field">
-        <label>
+        <label className="evaluation-option">
           <input
             type="checkbox"
             checked={form.evalKondisiPeralatan}
             onChange={(e) => update("evalKondisiPeralatan", e.target.checked)}
-            style={{ width: "auto", marginRight: 6 }}
           />
-          Kondisi Peralatan/Kalibrator/Standar sesuai
+          <span><strong>Kondisi Peralatan/Kalibrator/Standar</strong><small>Pastikan peralatan dan standar dalam kondisi sesuai.</small></span>
         </label>
-      </div>
-      <div className="field">
-        <label>Metode (CCI-KAL-WI- ...)</label>
-        <input type="text" value={form.evalMetode} onChange={(e) => update("evalMetode", e.target.value)} />
-      </div>
-      <div className="field">
-        <label>Tanggal Evaluasi</label>
-        <input
-          type="date"
-          required
-          value={form.evalTanggal}
-          onChange={(e) => update("evalTanggal", e.target.value)}
-        />
-      </div>
-      <div className="field">
-        <label>Catatan Kondisi Alat</label>
-        <textarea
-          value={form.catatanKondisiAlat}
-          onChange={(e) => update("catatanKondisiAlat", e.target.value)}
-        />
-      </div>
-      <div className="field">
-        <label>Kesimpulan</label>
-        <div className="radio-group">
-          <label>
+      </fieldset>
+
+      <div className="evaluation-fields">
+        <h3>Detail hasil evaluasi</h3>
+        <div className="evaluation-field-grid">
+          <div className="field">
+            <label htmlFor="evalMetode">Metode evaluasi</label>
+            <input id="evalMetode" type="text" placeholder="Contoh: CCI-KAL-WI-001" value={form.evalMetode} onChange={(e) => update("evalMetode", e.target.value)} />
+          </div>
+          <div className="field">
+            <label htmlFor="evalTanggal">Tanggal evaluasi <span className="required">*</span></label>
+            <input
+              id="evalTanggal"
+              type="date"
+              required
+              value={form.evalTanggal}
+              onChange={(e) => update("evalTanggal", e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label htmlFor="catatanKondisiAlat">Catatan kondisi alat</label>
+          <textarea
+            id="catatanKondisiAlat"
+            placeholder="Tuliskan temuan atau catatan penting terkait kondisi alat..."
+            value={form.catatanKondisiAlat}
+            onChange={(e) => update("catatanKondisiAlat", e.target.value)}
+          />
+        </div>
+        <fieldset className="conclusion-field">
+          <legend>Kesimpulan evaluasi</legend>
+          <div className="radio-group">
+            <label className={form.kesimpulan === "DIPROSES" ? "selected" : ""}>
             <input
               type="radio"
               name="kesimpulan"
               checked={form.kesimpulan === "DIPROSES"}
               onChange={() => update("kesimpulan", "DIPROSES")}
             />
-            Diproses
-          </label>
-          <label>
+              <span><strong>Diproses</strong><small>Permohonan dapat dilanjutkan.</small></span>
+            </label>
+            <label className={form.kesimpulan === "DITANGGUHKAN" ? "selected" : ""}>
             <input
               type="radio"
               name="kesimpulan"
               checked={form.kesimpulan === "DITANGGUHKAN"}
               onChange={() => update("kesimpulan", "DITANGGUHKAN")}
             />
-            Ditangguhkan
-          </label>
-        </div>
+              <span><strong>Ditangguhkan</strong><small>Permohonan memerlukan tindak lanjut.</small></span>
+            </label>
+          </div>
+        </fieldset>
       </div>
       {error && <p className="error">{error}</p>}
 
-      <button type="submit" className="btn" disabled={submitting}>
-        {submitting ? "Menyimpan..." : "Setujui & Selesaikan"}
-      </button>
+      <div className="approval-submit">
+        <p>Pastikan seluruh hasil evaluasi sudah benar sebelum menyelesaikan permohonan.</p>
+        <button type="submit" className="btn" disabled={submitting}>
+          {submitting ? "Menyimpan..." : "Setujui & Selesaikan"}
+        </button>
+      </div>
     </form>
   );
 }

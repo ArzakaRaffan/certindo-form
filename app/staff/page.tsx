@@ -1,13 +1,10 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import SignOutButton from "@/components/SignOutButton";
-import type { Submission, AlatKalibrasi } from "@prisma/client";
 import CertindoBrand from "@/components/CertindoBrand";
-
-type SubmissionRow = Submission & { alatList: AlatKalibrasi[] };
+import StaffDashboardClient from "@/components/StaffDashboardClient";
 
 export default async function StaffDashboard() {
   const session = await getServerSession(authOptions);
@@ -18,56 +15,35 @@ export default async function StaffDashboard() {
     include: { alatList: true },
   });
 
-  return (
-    <div className="page-wide">
-      <div className="top-nav">
-        <div>
-          <div className="staff-brand staff-brand-left"><CertindoBrand /></div>
-          <h1>Dashboard Permohonan Kalibrasi</h1>
-          <p className="subtitle" style={{ marginBottom: 0 }}>
-            Masuk sebagai {session.user?.name}
-          </p>
-        </div>
-        <SignOutButton />
-      </div>
+  const dashboardData = submissions.map((submission) => ({
+    ...submission,
+    tanggalPermohonan: submission.tanggalPermohonan.toISOString(),
+    createdAt: submission.createdAt.toISOString(),
+    updatedAt: submission.updatedAt.toISOString(),
+  }));
 
-      <table>
-        <thead>
-          <tr>
-            <th>Nomor Surat</th>
-            <th>Perusahaan</th>
-            <th>Tanggal</th>
-            <th>Jumlah Alat</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {submissions.map((s: SubmissionRow) => (
-            <tr key={s.id}>
-              <td>{s.nomorSurat}</td>
-              <td>{s.namaPerusahaan}</td>
-              <td>{new Date(s.tanggalPermohonan).toLocaleDateString("id-ID")}</td>
-              <td>{s.alatList.length}</td>
-              <td>
-                <span className={`badge ${s.status === "SELESAI" ? "badge-done" : "badge-pending"}`}>
-                  {s.status === "SELESAI" ? "Selesai" : "Menunggu Approval"}
-                </span>
-              </td>
-              <td>
-                <Link href={`/staff/${s.id}`}>Buka</Link>
-              </td>
-            </tr>
-          ))}
-          {submissions.length === 0 && (
-            <tr>
-              <td colSpan={6} style={{ textAlign: "center", color: "#999" }}>
-                Belum ada permohonan masuk.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+  return (
+    <main className="staff-dashboard">
+      <header className="dashboard-header">
+        <div className="dashboard-header-inner">
+          <div>
+            <div className="staff-brand staff-brand-left"><CertindoBrand /></div>
+            <p className="dashboard-welcome">Ruang kerja staf</p>
+            <h1>Dashboard Permohonan</h1>
+            <p>Pantau dan proses permohonan kalibrasi dalam satu tempat.</p>
+          </div>
+          <div className="dashboard-account">
+            <div className="account-copy">
+              <span className="account-avatar" aria-hidden="true">{session.user?.name?.charAt(0).toUpperCase() || "S"}</span>
+              <span><small>Masuk sebagai</small><strong>{session.user?.name}</strong></span>
+            </div>
+            <SignOutButton />
+          </div>
+        </div>
+      </header>
+      <div className="dashboard-content">
+        <StaffDashboardClient submissions={dashboardData} />
+      </div>
+    </main>
   );
 }
