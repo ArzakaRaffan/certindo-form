@@ -98,6 +98,7 @@ p { margin-top: 0; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 24px; }.form-grid-three { grid-template-columns: repeat(3, 1fr); }
 .service-grid { grid-template-columns: minmax(0, 1.45fr) minmax(240px, .55fr); }
 .field-wide { grid-column: 1 / -1; }.field > label, .choice-field legend { display: block; margin-bottom: 7px; color: var(--navy); font-size: 12px; font-weight: 600; }
+.field-help { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.45; }
 input[type="text"], input[type="search"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"], input[type="password"], textarea, select { width: 100%; min-height: 48px; padding: 11px 13px; background: #fff; color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; transition: .18s ease; }
 textarea { min-height: 88px; resize: vertical; }
 input::placeholder, textarea::placeholder { color: #9aa7af; }

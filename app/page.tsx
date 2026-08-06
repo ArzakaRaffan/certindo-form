@@ -224,7 +224,9 @@ export default function FormPage() {
                   <div className="subsection-title"><h4>Informasi Narahubung</h4><span></span></div>
                   <div className="form-grid form-grid-three">
                     <Field label="Nama Narahubung" required><input type="text" required placeholder="Nama lengkap" value={form.narahubung} onChange={(e) => updateField("narahubung", e.target.value)} /></Field>
-                    <Field label="Nomor Telepon" required><input type="tel" required pattern="[0-9+() -]{8,20}" placeholder="+62 812 0000 0000" value={form.hp} onChange={(e) => updateField("hp", e.target.value)} /></Field>
+                    <Field label="Nomor Telepon" required hint="Format 08… atau +62… dapat digunakan.">
+                      <input id="nomorTelepon" type="tel" inputMode="tel" autoComplete="tel" required pattern="[0-9+() -]{8,20}" placeholder="0812 0000 0000" aria-describedby="nomorTeleponHint" value={form.hp} onChange={(e) => updateField("hp", e.target.value)} />
+                    </Field>
                     <Field label="Alamat Email" required><input type="email" required placeholder="nama@perusahaan.com" value={form.email} onChange={(e) => updateField("email", e.target.value)} /></Field>
                   </div>
                   <div className="subsection-title"><h4>Informasi Layanan</h4><span></span></div>
@@ -315,8 +317,8 @@ export default function FormPage() {
   );
 }
 
-function Field({ label, required, wide, children }: { label: string; required?: boolean; wide?: boolean; children: React.ReactNode }) {
-  return <div className={`field${wide ? " field-wide" : ""}`}><label>{label}{required && <span className="required"> *</span>}</label>{children}</div>;
+function Field({ label, required, wide, hint, children }: { label: string; required?: boolean; wide?: boolean; hint?: string; children: React.ReactNode }) {
+  return <div className={`field${wide ? " field-wide" : ""}`}><label>{label}{required && <span className="required"> *</span>}</label>{children}{hint && <small className="field-help" id="nomorTeleponHint">{hint}</small>}</div>;
 }
 
 function ChoiceGroup({ label, name, value, onChange, options }: { label: string; name: string; value: string; onChange: (value: string) => void; options: string[][] }) {
