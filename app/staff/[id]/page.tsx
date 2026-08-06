@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ApprovalForm from "@/components/ApprovalForm";
+import SubmissionArchiveButton from "@/components/SubmissionArchiveButton";
 import type { AlatKalibrasi } from "@prisma/client";
 
 export default async function StaffDetailPage({ params }: { params: { id: string } }) {
@@ -32,6 +33,19 @@ export default async function StaffDetailPage({ params }: { params: { id: string
       <p className="subtitle">
         Diajukan {new Date(submission.createdAt).toLocaleString("id-ID")}
       </p>
+
+      {submission.archivedAt && (
+        <div className="archive-banner">
+          <div>
+            <strong>Permohonan diarsipkan</strong>
+            <p>
+              Diarsipkan {new Date(submission.archivedAt).toLocaleString("id-ID")}
+              {submission.archivedBy ? ` oleh ${submission.archivedBy}` : ""}. Pulihkan untuk memproses kembali.
+            </p>
+          </div>
+          <SubmissionArchiveButton submissionId={submission.id} nomorSurat={submission.nomorSurat} archived />
+        </div>
+      )}
 
       <section className="card staff-data-card">
         <h2>Data Perusahaan (diisi client)</h2>
@@ -71,7 +85,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
         </table>
       </section>
 
-      {submission.status === "SELESAI" ? (
+      {submission.archivedAt ? null : submission.status === "SELESAI" ? (
         <section className="card staff-data-card">
           <h2>Sudah Disetujui</h2>
           <p>Kesimpulan: <strong>{submission.kesimpulan === "DIPROSES" ? "Diproses" : "Ditangguhkan"}</strong></p>
@@ -88,6 +102,12 @@ export default async function StaffDetailPage({ params }: { params: { id: string
           </div>
           <ApprovalForm submissionId={submission.id} />
         </section>
+      )}
+
+      {!submission.archivedAt && (
+        <div className="detail-archive-footer">
+          <SubmissionArchiveButton submissionId={submission.id} nomorSurat={submission.nomorSurat} archived={false} />
+        </div>
       )}
     </main>
   );

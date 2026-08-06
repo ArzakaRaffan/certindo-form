@@ -24,6 +24,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (!submission) {
     return NextResponse.json({ error: "Submission tidak ditemukan." }, { status: 404 });
   }
+  if (submission.archivedAt) {
+    return NextResponse.json(
+      { error: "Permohonan sedang diarsipkan. Pulihkan terlebih dahulu untuk memprosesnya." },
+      { status: 409 },
+    );
+  }
 
   await prisma.submission.update({
     where: { id: params.id },

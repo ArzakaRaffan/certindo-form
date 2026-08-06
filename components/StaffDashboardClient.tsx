@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import SubmissionArchiveButton from "@/components/SubmissionArchiveButton";
 
 type DashboardSubmission = {
   id: string;
@@ -12,6 +13,8 @@ type DashboardSubmission = {
   email: string;
   tanggalPermohonan: string;
   createdAt: string;
+  archivedAt: string | null;
+  archivedBy: string | null;
   status: "MENUNGGU_APPROVAL" | "SELESAI";
   jenisLayanan: string;
   kecepatanLayanan: "REGULER" | "PERCEPATAN";
@@ -43,21 +46,22 @@ function SearchIcon() {
 
 export default function StaffDashboardClient({ submissions }: { submissions: DashboardSubmission[] }) {
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"AKTIF" | "ARSIP">("AKTIF");
   const [status, setStatus] = useState("SEMUA");
   const [service, setService] = useState("SEMUA");
   const [speed, setSpeed] = useState("SEMUA");
   const [period, setPeriod] = useState("SEMUA");
   const [sort, setSort] = useState("TERBARU");
 
-  const stats = useMemo(() => ({
-    total: submissions.length,
-    pending: submissions.filter((item) => item.status === "MENUNGGU_APPROVAL").length,
-    done: submissions.filter((item) => item.status === "SELESAI").length,
-    equipment: submissions.reduce(
-      (total, item) => total + item.alatList.reduce((sum, alat) => sum + alat.jumlah, 0),
-      0,
-    ),
-  }), [submissions]);
+  const stats = useMemo(() => {
+    const active = submissions.filter((item) => !item.archivedAt);
+    return {
+      total: active.length,
+      pending: active.filter((item) => item.status === "MENUNGGU_APPROVAL").length,
+      done: active.filter((item) => item.status === "SELESAI").length,
+      archived: submissions.filter((item) => item.archivedAt).length,
+    };
+  }, [submissions]);
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("id-ID");
@@ -79,6 +83,7 @@ export default function StaffDashboardClient({ submissions }: { submissions: Das
         ].join(" ").toLocaleLowerCase("id-ID");
 
         const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+        const matchesView = view === "ARSIP" ? Boolean(item.archivedAt) : !item.archivedAt;
         const matchesStatus = status === "SEMUA" || item.status === status;
         const matchesService = service === "SEMUA" || item.jenisLayanan === service ||
           (service === "IN_OUR_LAB" && item.jenisLayanan === "LAB") ||
@@ -86,14 +91,14 @@ export default function StaffDashboardClient({ submissions }: { submissions: Das
         const matchesSpeed = speed === "SEMUA" || item.kecepatanLayanan === speed;
         const matchesPeriod = period === "SEMUA" || new Date(item.createdAt) >= periodStart;
 
-        return matchesQuery && matchesStatus && matchesService && matchesSpeed && matchesPeriod;
+        return matchesView && matchesQuery && matchesStatus && matchesService && matchesSpeed && matchesPeriod;
       })
       .sort((a, b) => {
         if (sort === "TERLAMA") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         if (sort === "PERUSAHAAN") return a.namaPerusahaan.localeCompare(b.namaPerusahaan, "id-ID");
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [period, query, service, sort, speed, status, submissions]);
+  }, [period, query, service, sort, speed, status, submissions, view]);
 
   const hasFilters = query || status !== "SEMUA" || service !== "SEMUA" || speed !== "SEMUA" || period !== "SEMUA";
   const resetFilters = () => {
@@ -123,9 +128,9 @@ export default function StaffDashboardClient({ submissions }: { submissions: Das
           <small className="stat-accent-success">Permohonan disetujui</small>
         </div>
         <div className="stat-card">
-          <span>Total unit alat</span>
-          <strong>{stats.equipment}</strong>
-          <small>Dari seluruh permohonan</small>
+          <span>Diarsipkan</span>
+          <strong>{stats.archived}</strong>
+          <small>Data tetap tersimpan aman</small>
         </div>
       </section>
 
@@ -135,7 +140,12 @@ export default function StaffDashboardClient({ submissions }: { submissions: Das
             <h2>Daftar permohonan</h2>
             <p>Temukan dan tindak lanjuti permohonan kalibrasi.</p>
           </div>
-          <span className="result-count">{filtered.length} dari {submissions.length} data</span>
+          <span className="result-count">{filtered.length} data {view === "ARSIP" ? "arsip" : "aktif"}</span>
+        </div>
+
+        <div className="dashboard-tabs" role="tablist" aria-label="Tampilan permohonan">
+          <button type="button" role="tab" aria-selected={view === "AKTIF"} className={view === "AKTIF" ? "active" : ""} onClick={() => setView("AKTIF")}>Permohonan aktif <span>{stats.total}</span></button>
+          <button type="button" role="tab" aria-selected={view === "ARSIP"} className={view === "ARSIP" ? "active" : ""} onClick={() => setView("ARSIP")}>Arsip <span>{stats.archived}</span></button>
         </div>
 
         <div className="dashboard-tools">
@@ -237,15 +247,19 @@ export default function StaffDashboardClient({ submissions }: { submissions: Das
                       <span className="table-secondary">{item.alatList.length} jenis alat</span>
                     </td>
                     <td data-label="Status">
-                      <span className={`badge ${item.status === "SELESAI" ? "badge-done" : "badge-pending"}`}>
+                      <span className={`badge ${item.archivedAt ? "badge-archived" : item.status === "SELESAI" ? "badge-done" : "badge-pending"}`}>
                         <i aria-hidden="true" />
-                        {item.status === "SELESAI" ? "Selesai" : "Menunggu approval"}
+                        {item.archivedAt ? "Diarsipkan" : item.status === "SELESAI" ? "Selesai" : "Menunggu approval"}
                       </span>
+                      {item.archivedAt && <span className="table-secondary">{dateFormatter.format(new Date(item.archivedAt))}</span>}
                     </td>
                     <td className="table-action">
-                      <Link className="open-button" href={`/staff/${item.id}`} aria-label={`Buka permohonan ${item.nomorSurat}`}>
-                        Buka <span aria-hidden="true">&rarr;</span>
-                      </Link>
+                      <div className="row-actions">
+                        <Link className="open-button" href={`/staff/${item.id}`} aria-label={`Buka permohonan ${item.nomorSurat}`}>
+                          Buka <span aria-hidden="true">&rarr;</span>
+                        </Link>
+                        <SubmissionArchiveButton submissionId={item.id} nomorSurat={item.nomorSurat} archived={Boolean(item.archivedAt)} compact />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -257,8 +271,8 @@ export default function StaffDashboardClient({ submissions }: { submissions: Das
         {filtered.length === 0 && (
           <div className="dashboard-empty">
             <span><SearchIcon /></span>
-            <h3>{submissions.length === 0 ? "Belum ada permohonan" : "Data tidak ditemukan"}</h3>
-            <p>{submissions.length === 0 ? "Permohonan baru akan muncul otomatis di sini." : "Coba ubah kata kunci atau reset filter yang digunakan."}</p>
+            <h3>{submissions.length === 0 ? "Belum ada permohonan" : view === "ARSIP" && stats.archived === 0 ? "Arsip masih kosong" : "Data tidak ditemukan"}</h3>
+            <p>{submissions.length === 0 ? "Permohonan baru akan muncul otomatis di sini." : view === "ARSIP" && stats.archived === 0 ? "Permohonan yang diarsipkan akan tetap tersimpan dan muncul di sini." : "Coba ubah kata kunci atau reset filter yang digunakan."}</p>
             {hasFilters && <button type="button" className="btn btn-secondary btn-small" onClick={resetFilters}>Reset filter</button>}
           </div>
         )}

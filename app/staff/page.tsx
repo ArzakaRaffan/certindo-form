@@ -20,6 +20,7 @@ export default async function StaffDashboard() {
     tanggalPermohonan: submission.tanggalPermohonan.toISOString(),
     createdAt: submission.createdAt.toISOString(),
     updatedAt: submission.updatedAt.toISOString(),
+    archivedAt: submission.archivedAt?.toISOString() ?? null,
   }));
 
   return (

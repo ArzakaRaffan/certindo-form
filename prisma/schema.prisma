@@ -82,10 +82,15 @@ model Submission {
 
   status SubmissionStatus @default(MENUNGGU_APPROVAL)
 
+  // Arsip bersifat reversible. Data dan relasi alat tetap dipertahankan.
+  archivedAt DateTime?
+  archivedBy String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
+  @@index([archivedAt])
 }
 
 model AlatKalibrasi {
